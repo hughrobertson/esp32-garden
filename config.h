@@ -10,6 +10,8 @@
 
 #define MQTT_USERNAME "admin"
 #define MQTT_PASSWORD  "1944"
+#define TEMP_ENTRIES 4
+
 
 #define BT_ID "ESP32bt-lights"
   #define MQTT_ID   "ESP32garden"
@@ -18,7 +20,7 @@
   #define TOPIC_STATUS_CNT  "kelvinweb/garden/lights/status/count"
   #define TOPIC_STATUS_CNT2  "kelvinweb/garden/lights/status/count2"
   #define TOPIC_STATUS_VER  "kelvinweb/garden/lights/status/ver"
-
+  #define TOPIC_TEMPERATURES "kelvinweb/garden/lights/temperature"
 /*
 #define MQTT_ID   "ESP32boiler"
 #define BT_ID "ESP32bt-boiler"
@@ -29,7 +31,7 @@
 #define TOPIC_STATUS_CNT   "kelvinweb/boiler/status/count"
 #define TOPIC_STATUS_CNT2  "kelvinweb/boiler/status/count2"
 #define TOPIC_STATUS_VER   "kelvinweb/boiler/status/ver"
-#define TEMP_ENTRIES 4
+
 */
 
 #define LOOP_TIME  6000
