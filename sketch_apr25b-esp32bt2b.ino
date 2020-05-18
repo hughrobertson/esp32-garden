@@ -1,18 +1,22 @@
 /*********
   esp32 gpio control
+
+  ESP32 NodeMCU Developmentboard
+
 *********/
 #include "config.h"
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <Wire.h>
 #include "BluetoothSerial.h"
-//#include <iostream>   // std::cout
-//#include <string>     // std::string, std::to_string
+#include "OTA.h"
+
+//unsigned long entry;// telnet use
 
 //======================================================
 
-const char* version = " version2 260429 esp32 bt2b ";
-
+const char* version = " version2 180520 esp32 bt2boiler ota ";
+//adc over mqtt with bluetooth printBT and ota update enabled. Output mV
 //======================================================
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
@@ -21,13 +25,19 @@ const char* version = " version2 260429 esp32 bt2b ";
 BluetoothSerial SerialBT;
 
 char* ssid = WIFI_SSID;
-char MQTTid[20];//  = MQTT_ID;
+char MQTTid[20];
 const char* password = PASSWORD;
 const char* mqtt_server = MQTT_IP ;
-int error_RCerroorCount =0;
+int error_RCerroorCount = 0;
 int status[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 char statusStr[11];
+//adc
 
+int cal[10]    = { -8, -8, -8, -8};
+int adcpin[10] = {34, 35, 32, 33};
+
+
+//int temperature[TEMP_ENTRIES];
 
 
 WiFiClient espClient;
@@ -46,29 +56,24 @@ const int pin[10] = { 2, 23, 22, 21, 19, 18, 5, 17, 16, 4}; //request to gpio co
 //const int pin[8] = {  16, 5, 4, 0, 2,14,12,13};    //request to gpio convert esp8266
 //pin                 16,17,18,19,20,23,24,25
 int gpioNumber = 10;
+//========================================
 
+
+//========================================
 void setup() {
   int i;
   char buffer [20];
   Serial.begin(115200);
   Serial.println(version);
-  i=random(1000);
- 
-  //i=randomNum;
-  itoa (i,buffer,10);
-  //printf ("decimal: %s\n",buffer);
-  strcpy(MQTTid, MQTT_ID); 
-  //Serial.println("===========================");  
-  //Serial.println(randomNum);   
-  //Serial.println(buffer);
+  i = random(1000);
+
+  itoa (i, buffer, 10);
+  strcpy(MQTTid, MQTT_ID);
   strcat(MQTTid, buffer);
   Serial.println(MQTTid);
-  //Serial.println("===========================");  
 
 
- 
-
-  SerialBT.begin("ESP32bt"); //Bluetooth device name
+  SerialBT.begin(BT_ID); //Bluetooth device name
   Serial.println("The device started, now you can pair it with bluetooth!");
   if (SerialBT.available()) {
     Serial.println("bt available");
@@ -77,7 +82,7 @@ void setup() {
   SerialBT.println("Restart");
 
   setup_wifi();
-  client.setServer(mqtt_server, 1883);
+  client.setServer(mqtt_server, MQTT_PORT);
   client.setCallback(callback);
 
   for (int i = 0; i < gpioNumber; i++) {
@@ -85,40 +90,47 @@ void setup() {
   }
   delay(1000);
   client.publish(TOPIC_STATUS, version );
-}
+}//========================================
+
+
+//========================================
 
 void setup_wifi() {
-  int setCount=0;
-  int error =0;
+  int setCount = 0;
+  int error = 0;
   delay(10);
   // We start by connecting to a WiFi network
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
 
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
+
+  ArduinoOTA.setHostname("TemplateSketch1");
+  setupOTA();
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
     SerialBT.print(".");
     setCount++;
-    if(setCount>20){
-      error =-1;
+    if (setCount > 20) {
+      error = -1;
       break;
-      }
+    }
   }
-  if(error==0)
+  if (error == 0)
   {
     Serial.println("");
     Serial.println("WiFi connected");
     Serial.println("ESP32 IP address: ");
     Serial.println(WiFi.localIP());
   }
-  else{
+  else {
     SerialBT.println("WiFi not connected");
     delay(5000);
-    }
+  }
 }
 
 void callback(char* topic, byte* message, unsigned int length) {
@@ -185,7 +197,10 @@ void callback(char* topic, byte* message, unsigned int length) {
 
   }
 }
+//========================================
 
+
+//========================================
 void reconnect() {
   static int countR = 0;
   int retry = 0;
@@ -209,8 +224,8 @@ void reconnect() {
       //Serial.print(client.state());
       //SerialBT.print(client.state());
       // Wait 5 seconds before retrying
-      
-      if(error_RCerroorCount++>100){
+
+      if (error_RCerroorCount++ > 100) {
         SerialBT.print("mqtt id :");
         SerialBT.println(MQTTid);
         //Serial.print(" failed, rc=");
@@ -241,7 +256,10 @@ int readGPIOstatus() {
 
   return (count);
 }
+//========================================
 
+
+//========================================
 void loop() {
 
   int wifirestart = 0;
@@ -270,8 +288,14 @@ void loop() {
     reconnect();
   }
   client.loop();
+  //OTA===========================
+  //entry=micros();
+  ArduinoOTA.handle();
+  //TelnetStream.println(micros()-entry);
+  //TelnetStream.println("Loop");
 
-  delay(100);
+  delay(1000);
+  //==============================
 
   long now = millis();
   if (now - lastMsg > 60000) {
@@ -288,3 +312,7 @@ void loop() {
     SerialBT.println(count);
   }
 }
+//========================================
+
+
+//========================================
