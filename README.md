@@ -1,2 +1,2 @@
 # esp32-garden
-control garden lights
+control garden lights now tplink router

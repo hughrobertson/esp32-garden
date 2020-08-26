@@ -15,7 +15,7 @@
 
 //======================================================
 
-const char* version = " version2 180520 esp32 bt2boiler ota ";
+const char* version = " version2 260820 esp32 bt2boiler ota tplink ";
 //adc over mqtt with bluetooth printBT and ota update enabled. Output mV
 //======================================================
 

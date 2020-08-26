@@ -1,7 +1,7 @@
 
 //wifi
-#define WIFI_SSID "VM-2G"
-#define PASSWORD "1234567890"
+#define WIFI_SSID "TP-LINK_12124A"   //"VM-2G"
+#define PASSWORD  "1234567890"
 //mqtt server
 #define MQTT_SERVER "kelvinweb.co.uk"
 #define MQTT_IP "192.168.2.90"
